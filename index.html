@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>clock</title>
+</head>
+<body>
+    <canvas id="canvas" width="500px" height="500px" style="background-color:bisque"></canvas>
+    <script>
+        var canvas = document.getElementById("canvas");
+        var cxt = canvas.getContext("2d");
+
+        var run = 0;
+        var date = new Date();
+        var hou = date.getHours();
+        var min = date.getMinutes();
+        var sec = date.getSeconds();
+        if(hou>12){
+            hou = hou-12;
+        }
+
+        window.onload = function(){//初始化，让画布背景与钟表同时显示
+            drawClock(0)
+        }
+
+        var backgroundImg = new Image();      
+        backgroundImg.src = "image/img.jpg";  
+
+        var drawClock = function(run){
+            
+            //表盘背景
+            cxt.beginPath();
+            cxt.arc(250.5,250.5,200.5,0,2*Math.PI);
+            cxt.stroke();
+            cxt.clip();
+            cxt.closePath();
+            // backgroundImg.onload = function(){  会出现闪动
+                cxt.drawImage(backgroundImg,0,0,500,500);
+            // }
+            
+            //外围表盘
+            cxt.lineWidth = 1;
+            cxt.strokeStyle = "black";
+            cxt.beginPath();
+            cxt.arc(250,250,200,0,Math.PI*2,false);
+            cxt.stroke();
+            cxt.closePath();
+            
+            cxt.beginPath();
+            cxt.fillStyle = "black";
+            cxt.arc(250,250,5,0,Math.PI*2,false);
+            cxt.fill();
+            cxt.stroke();
+            cxt.closePath();
+
+            //画刻度
+            function drawHourscale(i){
+                cxt.save()
+                cxt.translate(250,250);
+                
+                cxt.rotate(6*i/180*Math.PI);
+                if(i % 5 == 0){
+                    cxt.beginPath();
+                    cxt.moveTo(0,-200);
+                    cxt.lineTo(0,-180);
+                    cxt.stroke();
+                }else{
+                    cxt.beginPath();
+                    cxt.moveTo(0,-200);
+                    cxt.lineTo(0,-190);
+                    cxt.stroke();
+                }
+                cxt.closePath();
+                cxt.restore();
+            }
+            for(var i = 0;i<120;i++){
+                drawHourscale(i);
+            }
+
+            //数字时间显示
+            var digitTime =function(){
+                cxt.save()
+                cxt.lineWidth = 2;
+                cxt.strokeStyle = "yellow";
+                cxt.beginPath()
+                cxt.translate(250,250);
+                cxt.rect(-50,140,100,30);
+                cxt.closePath();
+                cxt.stroke();
+                cxt.restore();
+
+                //写入时间
+                var digit_date = new Date();
+                var digit_hou = digit_date.getHours()>9 ? digit_date.getHours() : "0"+digit_date.getHours();
+                var digit_min = digit_date.getMinutes()>9 ? digit_date.getMinutes() : "0"+digit_date.getMinutes();
+                var digit_sec = digit_date.getSeconds()>9 ? digit_date.getSeconds() : "0"+digit_date.getSeconds();
+
+                cxt.save();
+                cxt.beginPath()
+                cxt.translate(250,250);
+                cxt.fillStyle = "red";
+                cxt.font = 'bold 20px consolas';
+                cxt.textAlign = 'center';
+                cxt.textBaseline = 'middle';
+                
+                cxt.strokeStyle = '#DF5326';
+                cxt.strokeText(digit_hou+':'+digit_min+":"+digit_sec,0,155,100);
+                cxt.fillText(digit_hou+':'+digit_min+":"+digit_sec,0,155,100);
+                
+                cxt.restore();
+            }
+            digitTime();
+            
+            //画指针
+            //1.时针
+            var hour = function(run){
+                cxt.save()
+                cxt.lineWidth = 3;
+                cxt.strokeStyle = "blue";
+                cxt.translate(250,250);
+
+                cxt.rotate((6/720*run+(hou+min/60+sec/3600)*30)/180*Math.PI);
+                cxt.beginPath();
+                cxt.moveTo(0,-5);
+                cxt.lineTo(0,-100);
+                cxt.stroke();
+                cxt.closePath();
+                cxt.restore();
+
+            }
+            hour(run)
+            
+            //2.分针
+            var minute = function(run){
+                cxt.save()
+                cxt.lineWidth = 2;
+                cxt.strokeStyle = "green";
+                cxt.translate(250,250);
+
+                cxt.rotate((6/60*run+(min+sec/60)*6)/180*Math.PI);
+                cxt.beginPath();
+                cxt.moveTo(0,-5);
+                cxt.lineTo(0,-130);
+                cxt.stroke();
+                cxt.closePath();
+                cxt.restore();
+            }
+            minute(run);
+
+            //2.秒针
+            var second = function(run){
+                cxt.save()
+                cxt.lineWidth = 1;
+                cxt.strokeStyle = "red";
+                cxt.translate(250,250);
+
+                cxt.rotate((6*run+6*sec)/180*Math.PI);
+                cxt.beginPath();
+                cxt.moveTo(0,-5);
+                cxt.lineTo(0,-130);
+                cxt.stroke();
+                cxt.closePath();
+
+                cxt.beginPath();
+                cxt.arc(0,-135,5,0,Math.PI*2,false);
+                cxt.stroke();
+                cxt.closePath();
+
+                cxt.beginPath();
+                cxt.moveTo(0,-140);
+                cxt.lineTo(0,-170);
+                cxt.stroke();
+                cxt.closePath();
+                cxt.restore();
+            }
+            second(run);  
+        }
+        //循环调用，实现指针转动
+        setInterval(function(){
+            cxt.clearRect(0,0,500,500);
+            //requestAnimationFrame(drawClock(++run));
+            drawClock(++run);
+        },1000)
+           
+    </script>
+</body>
+</html>
